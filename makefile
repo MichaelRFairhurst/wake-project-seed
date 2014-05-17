@@ -59,6 +59,7 @@ $(OBJECTDIR)/%Test.o: $(TESTDIR)/%Test.wk
 
 ifneq "$(MAKECMDGOALS)" "clean"
 -include ${SOURCEFILES:.wk=.d}
+-include ${TESTFILES:.wk=.d}
 endif
 
 clean:
