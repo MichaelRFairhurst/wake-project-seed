@@ -17,7 +17,7 @@ TESTDEPDIR := bin/testdep
 SOURCEFILES := $(wildcard $(SRCDIR)/*.wk)
 TESTFILES := $(wildcard $(TESTDIR)/*.wk)
 
-DEPFILES := ${SOURCEFILES:.wk=.d} ${TESTFILES:.wk=.d}
+DEPFILES := $(subst $(SRCDIR),$(SRCDEPDIR),${SOURCEFILES:.wk=.d}) $(subst $(TESTDIR),$(TESTDEPDIR),${TESTFILES:.wk=.d})
 OBJECTFILES := $(subst $(SRCDIR),$(OBJECTDIR),${SOURCEFILES:.wk=.o})
 TESTOBJECTFILES := $(subst $(TESTDIR),$(OBJECTDIR),${TESTFILES:.wk=.o})
 TABLEFILES := $(subst $(SRCDIR),$(TABLEDIR),${SOURCEFILES:.wk=.table})
@@ -66,8 +66,7 @@ $(OBJECTDIR)/%Test.o: $(TESTDIR)/%Test.wk
 	wake $< -d $(TABLEDIR) -o $@
 
 ifneq "$(MAKECMDGOALS)" "clean"
--include $(subst $(SRCDIR),$(SRCDEPDIR),${SOURCEFILES:.wk=.d})
--include $(subst $(TESTDIR),$(TESTDEPDIR),${TESTFILES:.wk=.d})
+-include $(DEPFILES)
 endif
 
 clean:
