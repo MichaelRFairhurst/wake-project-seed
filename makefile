@@ -9,6 +9,7 @@ TESTLIBRARYFILES :=
 
 SRCDIR := src
 TESTDIR := test
+GENDIR := gen
 TABLEDIR := bin/waketable
 OBJECTDIR := bin/wakeobj
 SRCDEPDIR := bin/srcdep
@@ -61,6 +62,24 @@ $(OBJECTDIR)/%.o: $(SRCDIR)/%.wk
 
 $(TABLEDIR)/%Test.table: $(TESTDIR)/%Test.wk $(OBJECTDIR)/%Test.o
 	@:
+
+$(OBJECTDIR)/%Mock.o: $(GENDIR)/%Mock.wk
+	wake $< -d $(TABLEDIR) -o $@
+
+$(TABLEDIR)/%Mock.table: $(GENDIR)/%Mock.wk $(OBJECTDIR)/%Mock.o
+	@:
+
+$(TABLEDIR)/%Stubber.table: $(OBJECTDIR)/%Stubber.o
+	@:
+
+$(TABLEDIR)/%Verifier.table: $(OBJECTDIR)/%Verifier.o
+	@:
+
+$(GENDIR)/%Mock.wk: $(TABLEDIR)/%.table.md5
+	wockito-generator -d $(TABLEDIR) -o $@ $*
+
+$(GENDIR)/MockProvider.wk:
+	wockito-generator -m -d $(TABLEDIR) -o $@ $(subst .table.md5,,$(subst $(TABLEDIR),,$^))
 
 $(OBJECTDIR)/%Test.o: $(TESTDIR)/%Test.wk
 	wake $< -d $(TABLEDIR) -o $@
