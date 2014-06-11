@@ -17,7 +17,7 @@ do
   fi
 
   CLASSNAME=$(echo $LINE | sed 's/^import \(.*\);$/\1/')
-  LASTFOUR=$(echo $CLASSNAME | tail -c 4)
+  LASTFOUR=$(echo $CLASSNAME | tail -c 5)
 
   if [ "$LASTFOUR" == "Mock" ]
   then
@@ -29,4 +29,5 @@ do
 done < $1
 
 echo bin/wakeobj/$( basename $1 | sed 's/\.wk/.o/'): $1 ${deps[@]}
-echo gen/MockProvider.wk: ${mocks[@]}
+echo bin/waketable/$( basename $1 | sed 's/\.wk/.table/'): $1 ${deps[@]}
+echo MOCKS := \$\(MOCKS\) ${mocks[@]}

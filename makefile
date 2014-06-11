@@ -24,6 +24,20 @@ TESTOBJECTFILES := $(subst $(TESTDIR),$(OBJECTDIR),${TESTFILES:.wk=.o})
 TABLEFILES := $(subst $(SRCDIR),$(TABLEDIR),${SOURCEFILES:.wk=.table})
 TESTTABLEFILES := $(subst $(TESTDIR),$(TABLEDIR),${TESTFILES:.wk=.table})
 
+all: bin/$(PROGRAM)
+
+ifneq "$(MAKECMDGOALS)" "clean"
+-include $(DEPFILES)
+endif
+
+MOCKOBJECTFILES := $(subst .table.md5,.o,$(subst $(TABLEDIR),$(OBJECTDIR),$(MOCKS)))
+MOCKCLASSNAMES := $(subst Mock.table.md5,,$(subst $(TABLEDIR)/,,$(MOCKS)))
+
+ifneq ($(MOCKCLASSNAMES),)
+	MOCKPROVIDEROBJ := $(OBJECTDIR)/MockProvider.o
+endif
+
+
 bin/$(PROGRAM): $(OBJECTFILES) $(TABLEFILES) $(LIBRARYFILES) tests
 ifeq ($(EXECUTABLE), true)
 		wake -l -d $(TABLEDIR) -o bin/$(PROGRAM) $(OBJECTFILES) $(LIBRARYFILES)
@@ -36,7 +50,7 @@ tests: bin/$(PROGRAM)-test
 bin/$(PROGRAM)-test: $(OBJECTFILES) $(TESTLIBRARYFILES) $(LIBRARYFILES) $(TABLEFILES) $(TESTOBJECTFILES) $(TESTTABLEFILES)
 	wunit-compiler
 	wake bin/TestSuite.wk -d $(TABLEDIR) -o bin/TestSuite.o
-	wake -l -d $(TABLEDIR) $(OBJECTFILES) $(TESTOBJECTFILES) $(TESTLIBRARYFILES) $(LIBRARYFILES) bin/TestSuite.o -o bin/$(PROGRAM)-test -c TestSuite -m 'tests()'
+	wake -l -d $(TABLEDIR) $(OBJECTFILES) $(TESTOBJECTFILES) $(TESTLIBRARYFILES) $(LIBRARYFILES) $(MOCKOBJECTFILES) $(MOCKPROVIDEROBJ) bin/TestSuite.o -o bin/$(PROGRAM)-test -c TestSuite -m 'tests()'
 
 to-md5 = $1 $(addsuffix .md5,$1)
 
@@ -69,33 +83,34 @@ $(OBJECTDIR)/%Mock.o: $(GENDIR)/%Mock.wk
 $(TABLEDIR)/%Mock.table: $(GENDIR)/%Mock.wk $(OBJECTDIR)/%Mock.o
 	@:
 
-$(TABLEDIR)/%Stubber.table: $(OBJECTDIR)/%Stubber.o
+$(TABLEDIR)/%Stubber.table: $(OBJECTDIR)/%Mock.o
 	@:
 
-$(TABLEDIR)/%Verifier.table: $(OBJECTDIR)/%Verifier.o
+$(TABLEDIR)/%Verifier.table: $(OBJECTDIR)/%Mock.o
 	@:
 
 $(GENDIR)/%Mock.wk: $(TABLEDIR)/%.table.md5
 	wockito-generator -d $(TABLEDIR) -o $@ $*
 
-$(GENDIR)/MockProvider.wk:
-	wockito-generator -m -d $(TABLEDIR) -o $@ $(subst .table.md5,,$(subst $(TABLEDIR),,$^))
+$(GENDIR)/MockProvider.wk: $(MOCKS)
+	wockito-generator -p -d $(TABLEDIR) -o $@ $(MOCKCLASSNAMES)
+
+$(OBJECTDIR)/MockProvider.o: $(GENDIR)/MockProvider.wk
+	wake $< -d $(TABLEDIR) -o $@
+
+$(TABLEDIR)/MockProvider.table: $(OBJECTDIR)/MockProvider.o
 
 $(OBJECTDIR)/%Test.o: $(TESTDIR)/%Test.wk
 	wake $< -d $(TABLEDIR) -o $@
 
-ifneq "$(MAKECMDGOALS)" "clean"
--include $(DEPFILES)
-endif
-
 clean:
-	rm $(TABLEFILES) || :
-	rm $(TESTTABLEFILES) || :
-	rm $(DEPFILES) || :
-	rm $(TESTOBJECTFILES) || :
-	rm $(OBJECTFILES) || :
+	rm $(TABLEDIR)/* || :
+	rm $(SRCDEPDIR)/* || :
+	rm $(TESTDEPDIR)/* || :
+	rm $(OBJECTDIR)/* || :
 	rm bin/TestSuite.wk || :
 	rm bin/TestSuite.o || :
 	rm bin/$(PROGRAM) || :
 	rm bin/$(PROGRAM)-test || :
+	rm $(GENDIR)/* || :
 	find . -name '*.md5' -delete
