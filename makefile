@@ -53,14 +53,14 @@ $(SRCDEPDIR)/%.d: $(SRCDIR)/%.wk
 $(TESTDEPDIR)/%.d: $(TESTDIR)/%.wk
 	@./generate-makefile.sh $< $(TABLEDIR) > $@
 
-$(TABLEDIR)/%.table: $(SRCDIR)/%.wk
-	wake $< -d $(TABLEDIR) -t
+$(TABLEDIR)/%.table: $(SRCDIR)/%.wk $(OBJECTDIR)/%.o
+	@:
 
 $(OBJECTDIR)/%.o: $(SRCDIR)/%.wk
 	wake $< -d $(TABLEDIR) -o $@
 
-$(TABLEDIR)/%Test.table: $(TESTDIR)/%Test.wk
-	wake $< -d $(TABLEDIR) -t
+$(TABLEDIR)/%Test.table: $(TESTDIR)/%Test.wk $(OBJECTDIR)/%Test.o
+	@:
 
 $(OBJECTDIR)/%Test.o: $(TESTDIR)/%Test.wk
 	wake $< -d $(TABLEDIR) -o $@
