@@ -3,8 +3,9 @@ PROGRAM := your-program-name
 # set to false or it will be linked with a main()
 EXECUTABLE := true
 
-LIBRARYFILES := ../compiler/bin/wakeobj/std.o
-LIBRARYTABLES := $(filter-out $(wildcard ../compiler/bin/waketable/*Test.table), $(wildcard ../compiler/bin/waketable/*.table) )
+# Include all wake libraries by default since there aren't many just yet
+LIBRARYFILES := $(wildcard lib/obj/*.o)
+LIBRARYTABLES := $(wildcard lib/table/*.table)
 TESTLIBRARYFILES :=
 
 ##
@@ -27,15 +28,25 @@ ifeq ($(OS),Windows_NT)
 	WOCKITO := node.exe wockito-generator
 	MD5SUM := win/md5sums.exe -u
 	WGET := win/wget.exe
-	UNZIP := win/tar.exe -xzvf
+	UNZIP := win/tar.exe -xvf
 else
 	WAKE := wake
 	WUNIT := node wunit-compiler
 	WOCKITO := node wockito-generator
 	MD5SUM := md5sum
 	WGET := wget
-	UNZIP := tar -xzvf
+	UNZIP := tar -xvf
 	RM := rm -f
+endif
+
+##
+# Download lib sources if they don't exist
+##
+ifeq ($(strip $(wildcard lib/*)),)
+	FORCESHELL := $(shell $(WGET) http://wakelang.com/libs-latest.tar)
+	FORCESHELL := $(shell $(UNZIP) libs-latest.tar)
+	FORCESHELL := $(shell $(RM) libs-latest.tar )
+	FORCESHELL := $(shell mv bundle lib)
 endif
 
 ##
