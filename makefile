@@ -24,6 +24,7 @@ TESTDEPDIR := bin/testdep
 ##
 ifeq ($(OS),Windows_NT)
 	WAKE := wake.exe
+	NODE := node.exe
 	WUNIT := node.exe wunit-compiler
 	WOCKITO := node.exe wockito-generator
 	MD5SUM := win/md5sums.exe -u
@@ -31,6 +32,7 @@ ifeq ($(OS),Windows_NT)
 	UNZIP := win/tar.exe -xvf
 else
 	WAKE := wake
+	NODE := node
 	WUNIT := node wunit-compiler
 	WOCKITO := node wockito-generator
 	MD5SUM := md5sum
@@ -103,7 +105,7 @@ endif
 ##
 .PHONY:
 tests: bin/$(PROGRAM)-test
-	node bin/$(PROGRAM)-test
+	$(NODE) bin/$(PROGRAM)-test
 
 bin/$(PROGRAM)-test: $(OBJECTFILES) $(TESTLIBRARYFILES) $(LIBRARYFILES) $(TABLEFILES) $(TESTOBJECTFILES) $(TESTTABLEFILES)
 	$(WUNIT)
@@ -133,10 +135,10 @@ $(addprefix $(TABLEDIR)/,$(notdir $(LIBRARYTABLES))): $(LIBRARYTABLES)
 # order and mock creation
 ##
 $(SRCDEPDIR)/%.d: $(SRCDIR)/%.wk
-	@./generate-makefile.sh $< $(TABLEDIR) > $@
+	@$(NODE) generate-makefile $< $(TABLEDIR) > $@
 
 $(TESTDEPDIR)/%.d: $(TESTDIR)/%.wk
-	@./generate-makefile.sh $< $(TABLEDIR) > $@
+	@$(NODE) generate-makefile $< $(TABLEDIR) > $@
 
 ##
 # Wake compiler commands
