@@ -38,11 +38,11 @@ else
 	UNZIP := tar -xvf
 	RM := rm -f
 endif
-ifeq ($(UNAME), Linux)
+ifeq ($(UNAME),Linux)
 	MD5SUM := md5sum
 	WGET := wget
 endif
-ifeq ($(UNAME), Darwin)
+ifeq ($(UNAME),Darwin)
 	MD5SUM := md5
 	WGET := curl -o libs-latest.tar
 endif
