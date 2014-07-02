@@ -35,10 +35,16 @@ else
 	NODE := node
 	WUNIT := node wunit-compiler
 	WOCKITO := node wockito-generator
-	MD5SUM := md5sum
-	WGET := wget
 	UNZIP := tar -xvf
 	RM := rm -f
+endif
+ifeq ($(UNAME), Linux)
+	MD5SUM := md5sum
+	WGET := wget
+endif
+ifeq ($(UNAME), Darwin)
+	MD5SUM := md5
+	WGET := curl -o libs-latest.tar
 endif
 
 ##
