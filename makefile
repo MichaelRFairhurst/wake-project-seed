@@ -18,6 +18,7 @@ TABLEDIR := bin/waketable
 OBJECTDIR := bin/wakeobj
 SRCDEPDIR := bin/srcdep
 TESTDEPDIR := bin/testdep
+RUNTESTS := tests
 
 ##
 # Use command names based on OS
@@ -99,7 +100,7 @@ ifneq ($(MOCKCLASSNAMES),)
 endif
 
 ## Compile our main executable ##
-bin/$(PROGRAM): $(OBJECTFILES) $(TABLEFILES) $(LIBRARYFILES) tests
+bin/$(PROGRAM): $(OBJECTFILES) $(TABLEFILES) $(LIBRARYFILES) $(RUNTESTS)
 ifeq ($(EXECUTABLE), true)
 		$(WAKE) -l -d $(TABLEDIR) -o bin/$(PROGRAM) $(OBJECTFILES) $(LIBRARYFILES)
 endif
