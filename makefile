@@ -69,7 +69,7 @@ EXTTESTFILES := $(wildcard $(TESTDIR)/extern/js/*.wk)
 ##
 # Calculate our artifacts
 ##
-DEPFILES := $(subst $(SRCDIR),$(SRCDEPDIR),${SOURCEFILES:.wk=.d}) $(subst $(TESTDIR),$(TESTDEPDIR),${TESTFILES:.wk=.d})
+DEPFILES := $(subst $(SRCDIR),$(SRCDEPDIR),${SOURCEFILES:.wk=.d}) $(subst $(TESTDIR),$(TESTDEPDIR),${TESTFILES:.wk=.d}) $(subst $(SRCDIR)/extern/js,$(SRCDEPDIR),${EXTSOURCEFILES:.wk=.d}) $(subst $(TESTDIR)/extern/js,$(TESTDEPDIR),${EXTTESTFILES:.wk=.d})
 OBJECTFILES := $(subst $(SRCDIR),$(OBJECTDIR),${SOURCEFILES:.wk=.o})
 TESTOBJECTFILES := $(subst $(TESTDIR),$(OBJECTDIR),${TESTFILES:.wk=.o})
 TABLEFILES := $(subst $(SRCDIR),$(TABLEDIR),${SOURCEFILES:.wk=.table})
@@ -80,8 +80,10 @@ EXTTESTOBJECTFILES := $(subst $(TESTDIR)/extern/js,$(OBJECTDIR),${EXTTESTFILES:.
 EXTTABLEFILES := $(subst $(SRCDIR)/extern/js,$(TABLEDIR),${EXTSOURCEFILES:.wk=.table})
 EXTTESTTABLEFILES := $(subst $(TESTDIR)/extern/js,$(TABLEDIR),${EXTTESTFILES:.wk=.table})
 
+
 ## ENTRY POINT ##
 all: bin/$(PROGRAM)
+
 
 ##
 # Include dynamic makefiles generated for each source file
@@ -152,6 +154,12 @@ $(SRCDEPDIR)/%.d: $(SRCDIR)/%.wk
 	@$(NODE) generate-makefile $< $(TABLEDIR) > $@
 
 $(TESTDEPDIR)/%.d: $(TESTDIR)/%.wk
+	@$(NODE) generate-makefile $< $(TABLEDIR) > $@
+
+$(SRCDEPDIR)/%.d: $(SRCDIR)/extern/js/%.wk
+	@$(NODE) generate-makefile $< $(TABLEDIR) > $@
+
+$(TESTDEPDIR)/%.d: $(TESTDIR)/extern/js/%.wk
 	@$(NODE) generate-makefile $< $(TABLEDIR) > $@
 
 ##
