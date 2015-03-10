@@ -6,7 +6,8 @@ EXECUTABLE := true
 # Include all wake libraries by default since there aren't many just yet
 LIBRARYFILES := $(wildcard lib/obj/*.o)
 LIBRARYTABLES := $(wildcard lib/table/*.table)
-TESTLIBRARYFILES :=
+LIBRARYMODULEFILES := $(wildcard lib/*/obj/*.o)
+LIBRARYMODULETABLES := $(wildcard lib/*/table/*.table)
 
 
 ##
@@ -118,9 +119,9 @@ endif
 
 
 ## Compile our main executable ##
-bin/$(PROGRAM): $(OBJECTFILES) $(TABLEFILES) $(LIBRARYFILES) $(RUNTESTS) $(EXTOBJECTFILES) $(EXTTABLEFILES)
+bin/$(PROGRAM): $(OBJECTFILES) $(TABLEFILES) $(LIBRARYFILES) $(LIBRARYMODULEFILES) $(RUNTESTS) $(EXTOBJECTFILES) $(EXTTABLEFILES)
 ifeq ($(EXECUTABLE), true)
-		$(WAKE) -l -d $(TABLEDIR) -o bin/$(PROGRAM) $(OBJECTFILES) $(LIBRARYFILES) $(EXTOBJECTFILES)
+		$(WAKE) -l -d $(TABLEDIR) -o bin/$(PROGRAM) $(OBJECTFILES) $(LIBRARYFILES) $(LIBRARYMODULEFILES) $(EXTOBJECTFILES)
 endif
 
 
@@ -133,10 +134,10 @@ endif
 tests: bin/$(PROGRAM)-test
 	$(NODE) bin/$(PROGRAM)-test
 
-bin/$(PROGRAM)-test: $(OBJECTFILES) $(TESTLIBRARYFILES) $(LIBRARYFILES) $(TABLEFILES) $(TESTOBJECTFILES) $(TESTTABLEFILES) $(EXTOBJECTFILES) $(EXTTESTOBJECTFILES) $(EXTTABLEFILES) $(EXTTESTTABLEFILES)
+bin/$(PROGRAM)-test: $(OBJECTFILES) $(TESTLIBRARYFILES) $(LIBRARYFILES) $(LIBRARYMODULEFILES) $(TABLEFILES) $(TESTOBJECTFILES) $(TESTTABLEFILES) $(EXTOBJECTFILES) $(EXTTESTOBJECTFILES) $(EXTTABLEFILES) $(EXTTESTTABLEFILES)
 	$(WUNIT)
 	$(WAKE) bin/TestSuite.wk -d $(TABLEDIR) -o bin/TestSuite.o
-	$(WAKE) -l -d $(TABLEDIR) $(OBJECTFILES) $(TESTOBJECTFILES) $(EXTOBJECTFILES) $(EXTTESTOBJECTFILES) $(TESTLIBRARYFILES) $(LIBRARYFILES) $(MOCKOBJECTFILES) $(MOCKPROVIDEROBJ) bin/TestSuite.o -o bin/$(PROGRAM)-test -c TestSuite -m 'tests()'
+	$(WAKE) -l -d $(TABLEDIR) $(OBJECTFILES) $(TESTOBJECTFILES) $(EXTOBJECTFILES) $(EXTTESTOBJECTFILES) $(TESTLIBRARYFILES) $(LIBRARYFILES) $(LIBRARYMODULEFILES) $(MOCKOBJECTFILES) $(MOCKPROVIDEROBJ) bin/TestSuite.o -o bin/$(PROGRAM)-test -c TestSuite -m 'tests()'
 
 
 ##
@@ -157,6 +158,9 @@ FORCE:
 ##
 $(addprefix $(TABLEDIR)/,$(notdir $(LIBRARYTABLES))): $(LIBRARYTABLES)
 	cp $(LIBRARYTABLES) $(TABLEDIR)
+
+$(addprefix $(TABLEDIR)/,$(subst /table,,$(subst lib/,,$(LIBRARYMODULETABLES:/table/=)))): $(LIBRARYMODULETABLES)
+	@echo $(foreach module,$(filter-out lib/obj lib/table,$(wildcard lib/*)),$(shell mkdir $(TABLEDIR)/$(notdir $(module))) $(shell cp $(wildcard $(module)/table/*) $(TABLEDIR)/$(notdir $(module))))
 
 
 ##
